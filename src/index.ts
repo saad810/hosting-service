@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
-import SimpleGit, { simpleGit } from "simple-git";
+import { simpleGit } from "simple-git";
 import { generateRandomId } from "./utils";
+import path from "path";
+import { getAllFiles } from "./fite";
 
 
 const app = express();
@@ -10,14 +12,15 @@ app.use(express.json());
 
 app.post("/deploy", async (req, res) => {
     const repoURL = req.body.repoURL;
-    console.log(`Deploying from repository: ${repoURL}`);
-
     const id = generateRandomId();
-    await simpleGit().clone(repoURL, `./output/${id}`);
+    const dir = path.join(__dirname, `./output/${id}`);
+    await simpleGit().clone(repoURL, dir);
+    const files = getAllFiles(dir);
 
     res.json({
-        message: `Deployment initiated from ${repoURL}`,
-        status: "success"
+        id: id,
+        message: "success",
+        files: files
     })
 })
 

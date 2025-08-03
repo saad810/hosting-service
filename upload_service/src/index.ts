@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { simpleGit } from "simple-git";
-import { generateRandomId } from "./utils";
+import { generateRandomId, normalizePath } from "./utils";
 import path from "path";
 import { getAllFiles } from "./fite";
 import { config } from "dotenv";
@@ -32,8 +32,11 @@ app.post("/deploy", async (req, res) => {
         if (file.includes(".git")) {
             return;
         }
+        // normalize the path
+        const new_path = normalizePath(file);
+        console.log(`normalized path: ${new_path}`);
         // console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
-        await uploadFile(file.slice(__dirname.length + 1), file);
+        await uploadFile(file.slice(__dirname.length + 1), new_path);
     });
     const job = await BuilderQueue.create({
       id: id,
@@ -47,7 +50,6 @@ app.post("/deploy", async (req, res) => {
         job: job?.status
     })
 })
-console.log(process.env.MONGO_URI);
 // connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || "").then(() => {
     console.log("Connected to MongoDB");

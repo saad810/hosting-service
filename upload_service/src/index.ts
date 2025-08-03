@@ -6,8 +6,9 @@ import path from "path";
 import { getAllFiles } from "./fite";
 import { config } from "dotenv";
 import { uploadFile } from "./cloudfare_r2";
-import { createClient } from "redis";
-// createClient
+import mongoose from "mongoose";
+import BuilderQueue from "./models/builder_queue";
+
 
 config();
 
@@ -15,11 +16,6 @@ config();
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// redis client
-const publisher = createClient();
-publisher.connect();
-
 
 app.post("/deploy", async (req, res) => {
     const repoURL = req.body.repoURL;
@@ -39,15 +35,24 @@ app.post("/deploy", async (req, res) => {
         // console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
         await uploadFile(file.slice(__dirname.length + 1), file);
     });
-
-    publisher.lPush("build-queue", id);
+    const job = await BuilderQueue.create({
+      id: id,
+      status: "pending",
+    });
+//   const job = await Job.create({ type, payload });
 
     res.json({
-        id: id,  
+        id: id,
         message: "success",
+        job: job?.status
     })
 })
+console.log(process.env.MONGO_URI);
+// connect to MongoDB
+mongoose.connect(process.env.MONGO_URI || "").then(() => {
+    console.log("Connected to MongoDB");
+    app.listen(3000, () => {
+        console.log("Server is running on port 3000");
+    });
 
-app.listen(3000, () => {
-    console.log("Server is running on port 3000");
 });

@@ -6,14 +6,20 @@ import path from "path";
 import { getAllFiles } from "./fite";
 import { config } from "dotenv";
 import { uploadFile } from "./cloudfare_r2";
+import { createClient } from "redis";
+// createClient
 
 config();
 
+// create express app
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-console.log(__dirname);
+// redis client
+const publisher = createClient();
+publisher.connect();
+
 
 app.post("/deploy", async (req, res) => {
     const repoURL = req.body.repoURL;
@@ -21,7 +27,7 @@ app.post("/deploy", async (req, res) => {
     const dir = path.join(__dirname, `./output/${id}`);
     await simpleGit().clone(repoURL, dir);
     const files = getAllFiles(dir);
-    console.log(files);
+    // console.log(files);
     // upload to Cloudflare R2
 
     files.forEach(async (file) => {
@@ -30,15 +36,15 @@ app.post("/deploy", async (req, res) => {
         if (file.includes(".git")) {
             return;
         }
-        console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
+        // console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
         await uploadFile(file.slice(__dirname.length + 1), file);
     });
 
+    publisher.lPush("build-queue", id);
 
     res.json({
-        id: id,
+        id: id,  
         message: "success",
-        files: files
     })
 })
 

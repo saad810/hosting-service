@@ -18,7 +18,7 @@ const s3 = new S3({
     
 
 export const uploadFile = async (filename: string, localFilePath: string)=>{
-    console.log(`Uploading ${filename} \t with ${localFilePath} to Cloudflare R2`);
+    // console.log(`Uploading ${filename} \t with ${localFilePath} to Cloudflare R2`);
 
     const fileContent = readFileSync(localFilePath);
     const response = await s3.upload({
@@ -26,5 +26,5 @@ export const uploadFile = async (filename: string, localFilePath: string)=>{
         Bucket: BucketName,
         Key: filename,
     }).promise();
-    console.log(response);
+    // console.log(response);
 }

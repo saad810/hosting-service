@@ -21,9 +21,15 @@ app.post("/deploy", async (req, res) => {
     const dir = path.join(__dirname, `./output/${id}`);
     await simpleGit().clone(repoURL, dir);
     const files = getAllFiles(dir);
+    console.log(files);
     // upload to Cloudflare R2
 
     files.forEach(async (file) => {
+        // if their is .git directory ignore it
+
+        if (file.includes(".git")) {
+            return;
+        }
         console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
         await uploadFile(file.slice(__dirname.length + 1), file);
     });

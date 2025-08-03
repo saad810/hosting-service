@@ -4,7 +4,9 @@ import { simpleGit } from "simple-git";
 import { generateRandomId } from "./utils";
 import path from "path";
 import { getAllFiles } from "./fite";
+import {config} from "dotenv";
 
+config();
 
 const app = express();
 app.use(cors());

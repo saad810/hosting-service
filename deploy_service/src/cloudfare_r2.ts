@@ -25,6 +25,11 @@ export const downloadS3Folder = async (dir: string) => {
         Bucket: BucketName,
         Prefix: dir
     }).promise();
+    if (!allFiles?.Contents || allFiles?.Contents?.length === 0) {
+        console.log("No files found in S3 bucket.");
+        return;
+    }
+    console.log(allFiles?.Contents)
 
     console.log(`Found ${allFiles?.Contents?.length} files in S3`);
     const allPromises = allFiles.Contents?.map(async ({ Key }) => {

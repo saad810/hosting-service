@@ -43,6 +43,7 @@ app.post("/deploy", async (req, res) => {
         const new_path = normalizePath(file.slice(__dirname.length + 1));
         console.log(`Uploading ${new_local_path} to ${new_path}`);
         // console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
+        
         await uploadFile(new_path, new_local_path);
 
     });

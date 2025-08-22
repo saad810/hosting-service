@@ -1,7 +1,8 @@
 import { config } from "dotenv";
 import { S3 } from "aws-sdk";
-import fs,{ readFileSync } from "fs";
+import fs, { readFileSync } from "fs";
 import path from "path";
+import { getAllFiles } from "./file";
 config();
 
 const Id = process.env.R2_ACCESS_KEY || "";
@@ -14,7 +15,26 @@ const s3 = new S3({
     secretAccessKey: Secret,
     endpoint: R2_URL,
 })
+export const uploadFile = async (filename: string, localFilePath: string) => {
+    // console.log(`Uploading ${filename} \t with ${localFilePath} to Cloudflare R2`);
 
+    const fileContent = readFileSync(localFilePath);
+    const response = await s3.upload({
+        Body: fileContent,
+        Bucket: BucketName,
+        Key: filename,
+    }).promise();
+    // console.log(response);
+}
+export const uploadDistFolder = async (id: string) => {
+    const folderPath = path.join(__dirname, `output/${id}/dist`);
+    const allFiles = getAllFiles(folderPath)
+    allFiles.forEach(async (filePath) => {
+       
+        await uploadFile(`dist/${id}/`+ filePath.slice(folderPath.length + 1), filePath);
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+}
 export const downloadS3Folder = async (dir: string) => {
     if (fs.existsSync(dir)) {
         console.log(`Directory ${dir} already exists, skipping download.`);
@@ -29,7 +49,7 @@ export const downloadS3Folder = async (dir: string) => {
         console.log("No files found in S3 bucket.");
         return;
     }
-    console.log(allFiles?.Contents)
+    // console.log(allFiles?.Contents)
 
     console.log(`Found ${allFiles?.Contents?.length} files in S3`);
     const allPromises = allFiles.Contents?.map(async ({ Key }) => {

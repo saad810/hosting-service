@@ -27,25 +27,17 @@ app.post("/deploy", async (req, res) => {
     const dir = path.join(__dirname, `./output/${id}`);
     await simpleGit().clone(repoURL, dir);
     const files = getAllFiles(dir);
-    // console.log(files);
     // upload to Cloudflare R2
-
     files.forEach(async (file) => {
         // if their is .git directory ignore it
-
         if (file.includes(".git")) {
             return;
         }
         // normalize the path
         const new_local_path = normalizePath(file);
-        // console.log(`normalized path: ${new_path}`);
-        // console.log(file.slice(__dirname.length + 1));
         const new_path = normalizePath(file.slice(__dirname.length + 1));
         console.log(`Uploading ${new_local_path} to ${new_path}`);
-        // console.log(`Uploading ${file.slice(__dirname.length + 1)}`);
-        
         await uploadFile(new_path, new_local_path);
-
     });
 
     await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -60,7 +52,7 @@ app.post("/deploy", async (req, res) => {
 })
 
 
-app.get("/status",async (req, res) => {
+app.get("/status", async (req, res) => {
     const id = req.query.id as string;
     const status = await subcriber.hget("status", id as string);
     res.json({

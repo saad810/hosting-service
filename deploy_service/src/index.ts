@@ -1,6 +1,7 @@
 import Redis, { Command } from 'ioredis'
 import { config } from "dotenv";
-import { downloadS3Folder } from './cloudfare_r2';
+import { downloadS3Folder, uploadDistFolder } from './cloudfare_r2';
+import { buildProject } from './utils';
 
 
 config();
@@ -18,7 +19,13 @@ async function main() {
         const id = res[1];
         // console.log(`Processing id: ${id}`);
         const dir = `output/${id}`;
+        console.log("begin download s3 folder")
         await downloadS3Folder(dir);
+        console.log("building project")
+        await buildProject(id);
+        console.log("uploading dist")
+        await uploadDistFolder(id);
+        console.log("finished processing id:", id);
     }
 }
 

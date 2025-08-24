@@ -36,7 +36,7 @@ app.post("/deploy", async (req, res) => {
         // normalize the path
         const new_local_path = normalizePath(file);
         const new_path = normalizePath(file.slice(__dirname.length + 1));
-        console.log(`Uploading ${new_local_path} to ${new_path}`);
+        console.log(`Uploading..`);
         await uploadFile(new_path, new_local_path);
     });
 
@@ -45,19 +45,20 @@ app.post("/deploy", async (req, res) => {
     publisher.lpush("builder_queue", id)
     publisher.hset("status", id, "uploaded");
 
-    res.json({
-        id: id,
+    res.status(200).json({
+        id,
         message: "success",
-    })
-})
+    });
+});
 
 
 app.get("/status", async (req, res) => {
     const id = req.query.id as string;
     const status = await subcriber.hget("status", id as string);
-    res.json({
-        id: id,
-        status: status
+    console.log(id, status);
+    res.status(200).json({
+        id,
+        status,
     });
 });
 
